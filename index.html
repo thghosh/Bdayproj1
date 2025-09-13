@@ -16,6 +16,8 @@
       overflow: hidden;
       font-family: 'Poppins', sans-serif;
     }
+
+    /* Entrance */
     .entrance {
       font-size: 3em;
       font-weight: bold;
@@ -26,6 +28,7 @@
       to   { text-shadow: 0 0 20px #0ff, 0 0 30px #ff0, 0 0 40px #f0f; }
     }
 
+    /* Main section */
     .main {
       display: none;
       flex-direction: column;
@@ -36,11 +39,6 @@
       font-size: 2.5em;
       color: #ff69b4;
       text-shadow: 0 0 10px #fff, 0 0 20px #ff69b4;
-      animation: bounce 1s infinite alternate;
-    }
-    @keyframes bounce {
-      from { transform: scale(1); }
-      to { transform: scale(1.1); }
     }
 
     video {
@@ -52,42 +50,47 @@
       transform: scaleX(-1); /* mirror effect */
     }
 
+    /* Aarti thali (SVG) */
     .thali {
       position: absolute;
-      width: 400px;
-      height: 400px;
-      border-radius: 50%;
-      border: 8px solid gold;
+      width: 300px;
+      height: 300px;
       display: flex;
       justify-content: center;
       align-items: center;
-      animation: circle 6s linear 1;
+      animation: circle 6s linear forwards;
+      z-index: 2;
     }
     @keyframes circle {
       from { transform: rotate(0deg); }
       to   { transform: rotate(1080deg); } /* 3 full spins */
     }
-    .diya {
-      width: 20px;
-      height: 20px;
-      background: orange;
-      border-radius: 50%;
-      box-shadow: 0 0 10px yellow;
-      position: absolute;
-    }
-    .diya:nth-child(1) { top: 10px; left: 50%; transform: translateX(-50%); }
-    .diya:nth-child(2) { bottom: 10px; left: 50%; transform: translateX(-50%); }
-    .diya:nth-child(3) { left: 10px; top: 50%; transform: translateY(-50%); }
-    .diya:nth-child(4) { right: 10px; top: 50%; transform: translateY(-50%); }
+    .hidden { display: none; }
 
-    .confetti {
+    /* Happy B'day popup */
+    .popup {
+      position: absolute;
+      font-size: 3em;
+      font-weight: bold;
+      color: gold;
+      text-shadow: 0 0 10px orange, 0 0 20px red;
+      opacity: 0;
+      animation: popupAnim 2s forwards;
+    }
+    @keyframes popupAnim {
+      from { opacity: 0; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Confetti */
+    #confetti {
       position: fixed;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       width: 100%;
       height: 100%;
       pointer-events: none;
       display: none;
+      z-index: 5;
     }
   </style>
 </head>
@@ -99,18 +102,28 @@
     <div class="camera-container">
       <video id="camera" autoplay playsinline></video>
       <div class="thali" id="thali">
-        <div class="diya"></div>
-        <div class="diya"></div>
-        <div class="diya"></div>
-        <div class="diya"></div>
+        <svg width="300" height="300" viewBox="0 0 300 300">
+          <circle cx="150" cy="150" r="140" fill="#d4af37" stroke="gold" stroke-width="5"/>
+          <!-- Diyas -->
+          <circle cx="150" cy="20" r="15" fill="orange"/>
+          <circle cx="280" cy="150" r="15" fill="orange"/>
+          <circle cx="150" cy="280" r="15" fill="orange"/>
+          <circle cx="20" cy="150" r="15" fill="orange"/>
+          <!-- Flames -->
+          <circle cx="150" cy="10" r="8" fill="yellow"/>
+          <circle cx="290" cy="150" r="8" fill="yellow"/>
+          <circle cx="150" cy="290" r="8" fill="yellow"/>
+          <circle cx="10" cy="150" r="8" fill="yellow"/>
+        </svg>
       </div>
     </div>
   </div>
 
-  <canvas class="confetti" id="confetti"></canvas>
+  <div id="popup" class="popup hidden">🎂 Happy B’Day 🎂</div>
+  <canvas id="confetti"></canvas>
 
   <script>
-    // Entrance then show main
+    // Entrance → show main
     setTimeout(() => {
       document.querySelector(".entrance").style.display = "none";
       document.querySelector(".main").style.display = "flex";
@@ -122,14 +135,16 @@
         })
         .catch(err => alert("Camera permission denied!"));
 
-      // End thali rotation after animation and start confetti
+      // After thali finishes, hide it and show popup + confetti
       setTimeout(() => {
-        document.getElementById("thali").style.display = "none";
+        document.getElementById("thali").classList.add("hidden");
+        let popup = document.getElementById("popup");
+        popup.classList.remove("hidden");
         startConfetti();
       }, 6500);
     }, 3000);
 
-    // Simple confetti animation
+    // Confetti
     const canvas = document.getElementById("confetti");
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
