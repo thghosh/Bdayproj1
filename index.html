@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Happy Birthday</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: black;
+      color: gold;
+      overflow: hidden;
+      flex-direction: column;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    #intro {
+      font-size: 3rem;
+      font-weight: bold;
+      color: gold;
+      text-shadow: 0 0 20px orange, 0 0 40px red;
+      opacity: 0;
+      animation: fadeIn 2s ease forwards;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: scale(0.5);}
+      to {opacity: 1; transform: scale(1);}
+    }
+
+    #video {
+      margin-top: 20px;
+      border: 5px solid gold;
+      border-radius: 15px;
+      width: 300px;
+      height: 220px;
+      object-fit: cover;
+      display: none;
+      z-index: 1;
+      position: relative;
+    }
+
+    #allowBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 10px;
+      background: gold;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      display: none;
+    }
+
+    #aarti-thali {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, orange 40%, red 90%);
+      box-shadow: 0 0 30px yellow, 0 0 60px orange;
+      display: none;
+      z-index: 2;
+    }
+
+    #confetti-canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      z-index: 3;
+    }
+  </style>
+</head>
+<body>
+  <div id="intro">✨ Made by Ankit ✨</div>
+  <button id="allowBtn">📸 Allow Camera</button>
+  <video id="video" autoplay playsinline></video>
+  <div id="aarti-thali"></div>
+  <canvas id="confetti-canvas"></canvas>
+
+  <script>
+    const intro = document.getElementById("intro");
+    const video = document.getElementById("video");
+    const thali = document.getElementById("aarti-thali");
+    const canvas = document.getElementById("confetti-canvas");
+    const ctx = canvas.getContext("2d");
+    const allowBtn = document.getElementById("allowBtn");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Show button after intro
+    setTimeout(() => {
+      allowBtn.style.display = "block";
+    }, 2500);
+
+    // Ask for camera on click
+    allowBtn.addEventListener("click", () => {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+        .then(stream => {
+          video.style.display = "block";
+          allowBtn.style.display = "none";
+          video.srcObject = stream;
+          startAarti();
+        })
+        .catch(err => alert("Camera permission denied: " + err));
+    });
+
+    // Aarti thali animation (3 rotations)
+    function startAarti() {
+      thali.style.display = "block";
+      let centerX = window.innerWidth / 2;
+      let centerY = window.innerHeight / 2 + 40;
+      let radius = 160;
+      let angle = 0;
+      let rotations = 0;
+
+      function animate() {
+        angle += 0.05;
+        thali.style.left = centerX + radius * Math.cos(angle) - 50 + "px";
+        thali.style.top = centerY + radius * Math.sin(angle) - 50 + "px";
+
+        if (angle >= 2 * Math.PI) {
+          angle = 0;
+          rotations++;
+        }
+        if (rotations < 3) {
+          requestAnimationFrame(animate);
+        } else {
+          thali.style.display = "none";
+          startConfetti();
+        }
+      }
+      animate();
+    }
+
+    // Confetti effect
+    let confetti = [];
+    function startConfetti() {
+      canvas.style.display = "block";
+      for (let i = 0; i < 300; i++) {
+        confetti.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          r: Math.random() * 6 + 2,
+          dx: Math.random() * 4 - 2,
+          dy: Math.random() * 4 + 2,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`
+        });
+      }
+      animateConfetti();
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confetti.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+        p.x += p.dx;
+        p.y += p.dy;
+        if (p.y > canvas.height) p.y = -10;
+      });
+      requestAnimationFrame(animateConfetti);
+    }
+  </script>
+</body>
+</html>
